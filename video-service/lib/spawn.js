@@ -47,8 +47,8 @@ const ffmpeg = () =>
   process.env.FFMPEG
     || path.resolve(
         process.env.LAMBDA_TASK_ROOT,
-        '_optimize',
-        process.env.AWS_LAMBDA_FUNCTION_NAME,
+        // '_optimize',
+        // process.env.AWS_LAMBDA_FUNCTION_NAME,
         'ffmpeg/ffmpeg');
 
 /**
@@ -58,8 +58,8 @@ const ffprobe = () =>
   process.env.FFPROBE
     || path.resolve(
         process.env.LAMBDA_TASK_ROOT,
-        '_optimize',
-        process.env.AWS_LAMBDA_FUNCTION_NAME,
+        // '_optimize',
+        // process.env.AWS_LAMBDA_FUNCTION_NAME,
         'ffmpeg/ffprobe');
 
 module.exports = {
