@@ -34,18 +34,19 @@ const createResponse = (error, data) => {
  * @returns {*}
  */
 module.exports.handler =
-  (event, context, callback) => {
-    const { ext } = path.parse(event.queryStringParameters.file);
-    const file = `${uuidV4()}${ext}`;
-    const session = uuidV4();
-    const filename = `videos/${session}/${file}`;
+    async (event, context) => {
+        const { ext } = path.parse(event.queryStringParameters.file);
+        const file = `${uuidV4()}${ext}`;
+        const session = uuidV4();
+        const filename = `videos/${session}/${file}`;
 
-    return insertSession({ id: session, status: 0 })
-      .then(() => {
-        s3.getSignedUrl('putObject', {
-          Bucket: process.env.SOURCE_BUCKET,
-          Key: filename,
-        }, (err, url) =>
-          callback(null, createResponse(err, { url, session })));
-      });
-  };
+        return insertSession({ id: session, status: 0 })
+            .then(() =>
+                  s3.getSignedUrl('putObject', {
+                      Bucket: process.env.SOURCE_BUCKET,
+                      Key: filename,
+                  }))
+            .then(url => createResponse(null, { url, session }))
+            .catch(err => createResponse(err))
+
+    };

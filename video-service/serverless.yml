@@ -4,7 +4,7 @@ service: et-video-service # NOTE: update this with your service name
 
 provider:
   name: aws
-  runtime: nodejs6.10
+  runtime: nodejs10.x
   region: us-east-1
   environment:
     SERVERLESS_STAGE: ${opt:stage, self:provider.stage}

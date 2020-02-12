@@ -4,7 +4,7 @@ service: et-upload-service # NOTE: update this with your service name
 
 provider:
   name: aws
-  runtime: nodejs6.10
+  runtime: nodejs10.x
   region: us-east-1
   environment:
     SERVERLESS_STAGE: ${opt:stage, self:provider.stage}
@@ -60,13 +60,11 @@ functions:
 
 plugins:
   - serverless-mocha-plugin
-  - serverless-webpack
   - serverless-offline
 
 custom:
   serverless-mocha-plugin:
     functionTemplate: templates/function.ejs
-  webpackIncludeModules: true
   secrets: ${file(../.secrets.yml)}
 
 resources:

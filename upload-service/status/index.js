@@ -1,6 +1,6 @@
 'use strict';
 
-const { parseS3SNSEvent } = require('../../shared/helpers');
+const { parseS3SNSEvent } = require('../shared/helpers');
 const { updateSession } = require('../lib/database');
 const AWS = require('aws-sdk');
 

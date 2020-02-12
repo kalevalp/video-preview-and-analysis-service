@@ -5,7 +5,7 @@ const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
 
 const { getSession } = require('../lib/database');
-const { sendMessage } = require('../../shared/snsQueue');
+const { sendMessage } = require('../shared/snsQueue');
 
 /**
  * Returns signed URL
