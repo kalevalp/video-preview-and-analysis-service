@@ -9,7 +9,7 @@ const {
   getOpenStatuses,
 } = require('../lib/database');
 
-const { parseSNSEvent } = require('../../shared/helpers');
+const { parseSNSEvent } = require('../shared/helpers');
 
 const config = {
   region: AWS.config.region || process.env.SERVERLESS_REGION || 'us-east-1',
@@ -106,4 +106,3 @@ module.exports.handler = (event, context, callback) => {
       Promise.all(Items.map(saveMetadata)))
     .then(() => callback(null, 'ok'));
 };
-

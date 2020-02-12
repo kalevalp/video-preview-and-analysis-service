@@ -1,8 +1,8 @@
 'use strict';
 
-const { parseS3SNSEvent } = require('../../shared/helpers');
+const { parseS3SNSEvent } = require('../shared/helpers');
 const { createStatus } = require('../lib/database');
-const { sendMessage } = require('../../shared/snsQueue');
+const { sendMessage } = require('../shared/snsQueue');
 
 /**
  * Handles session creation

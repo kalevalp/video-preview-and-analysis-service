@@ -6,7 +6,7 @@ const BbPromise = require('bluebird');
 const spawn = require('child_process').spawn;
 const path = require('path');
 const { insertLabels, updateStatus } = require('../lib/database');
-const { parseSNSEvent } = require('../../shared/helpers');
+const { parseSNSEvent } = require('../shared/helpers');
 const { getDuration, probe } = require('../lib');
 
 const config = {

@@ -7,14 +7,14 @@ const spawn = require('child_process').spawn;
 
 const path = require('path');
 const { updateStatus } = require('../lib/database');
-const { parseSNSEvent } = require('../../shared/helpers');
+const { parseSNSEvent } = require('../shared/helpers');
 
 const config = {
   region: AWS.config.region || process.env.SERVERLESS_REGION || 'us-east-1',
 };
 
 const s3 = new AWS.S3(config);
-const snsQueue = require('../../shared/snsQueue');
+const snsQueue = require('../shared/snsQueue');
 
 const ensureDir = BbPromise.promisify(fs.ensureDir);
 const writeFile = BbPromise.promisify(fs.writeFile);
