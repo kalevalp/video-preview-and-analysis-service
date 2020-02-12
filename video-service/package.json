@@ -29,8 +29,7 @@
     "eslint-plugin-react": "^6.1.1",
     "license-checker": "^8.0.3",
     "node-yaml": "^3.0.3",
-    "serverless-mocha-plugin": "^1.3.4",
-    "serverless-plugin-optimize": "^1.0.0-rc.15"
+    "serverless-mocha-plugin": "^1.3.4"
   },
   "scripts": {
     "test": "SLS_DEBUG=true serverless invoke test",

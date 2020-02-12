@@ -50,6 +50,9 @@ provider:
       Resource: "*"
 
 package:
+  include:
+    - ffmpeg/ffmpeg
+    - ffmpeg/ffprobe
   exclude:
     - test/**
     - .git/**
@@ -78,26 +81,17 @@ functions:
     handler: create-captures/index.handler
     memorySize: 1536
     timeout: 300
-    optimize:
-      includePaths:
-        - ffmpeg/ffmpeg
-        - ffmpeg/ffprobe
     events:
       - sns: arn:aws:sns:${self:provider.environment.SERVERLESS_REGION}:${self:custom.secrets.ACCOUNT}:${self:provider.environment.RENDER_START_TOPIC_NAME}
   create-gif:
     handler: create-gif/index.handler
     memorySize: 1536
     timeout: 300
-    optimize:
-      includePaths:
-        - ffmpeg/ffmpeg
-        - ffmpeg/ffprobe
     events:
       - sns: arn:aws:sns:${self:provider.environment.SERVERLESS_REGION}:${self:custom.secrets.ACCOUNT}:${self:provider.environment.RENDER_START_TOPIC_NAME}
 
 plugins:
   - serverless-mocha-plugin
-  - serverless-plugin-optimize
 
 custom:
   serverless-mocha-plugin:
