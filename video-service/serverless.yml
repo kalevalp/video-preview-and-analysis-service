@@ -5,8 +5,12 @@ service: et-video-service # NOTE: update this with your service name
 provider:
   name: aws
   runtime: nodejs10.x
-  region: us-east-1
+  region: eu-west-2
   environment:
+    WATCHTOWER_EVENT_KINESIS_STREAM:
+      Ref: EventsStream
+    # DEBUG_WATCHTOWER: 1    # Produces verbose debug prints
+    # PROFILE_WATCHTOWER: 1  # Produces timing information
     SERVERLESS_STAGE: ${opt:stage, self:provider.stage}
     SERVERLESS_PROJECT: ${self:service}
     SERVERLESS_REGION: ${opt:region, self:provider.region}
@@ -24,6 +28,13 @@ provider:
     LABELS_TABLE_NAME: ${self:provider.environment.SERVERLESS_PROJECT}-labels-${self:provider.environment.SERVERLESS_PROJECT}-${self:provider.environment.SERVERLESS_STAGE}
     VIDEO_MAX_DURATION: 30 # (in seconds) limit video duration (0 = no limit)
   iamRoleStatements:
+    - Effect: Allow             # Required for writing wt events
+      Action:
+        - 'kinesis:DescribeStream'
+        - 'kinesis:PutRecord'
+        - 'kinesis:PutRecords'
+      Resource:
+        Fn::GetAtt: [EventsStream, Arn]
     - Effect: Allow
       Action:
         - s3:ListBucket
@@ -61,30 +72,34 @@ package:
   individually: true
 
 functions:
+  watchtower-ingestion: ${file(watchtower/functions.yml):watchtower-ingestion}   # Event ingestion function
+  watchtower-monitor:   ${file(watchtower/functions.yml):watchtower-monitor}     # Event monitor
+  wt-monitor-trigger:   ${file(watchtower/functions.yml):wt-monitor-trigger}     # A function that triggers the event monitoring step-functions state machine
+
   create-session:
-    handler: create-session/index.handler
+    handler: create-session/index${self:custom.handlerFilePostfix}.handler
     timeout: 15
     events:
       - sns: arn:aws:sns:${self:provider.environment.SERVERLESS_REGION}:${self:custom.secrets.ACCOUNT}:${self:provider.environment.SESSION_TOPIC_NAME}
   status:
-    handler: status/index.handler
+    handler: status/index${self:custom.handlerFilePostfix}.handler
     timeout: 30
     events:
       - sns: ${self:provider.environment.STATUS_TOPIC}
       - schedule: rate(1 minute)
   get-labels:
-    handler: get-labels/index.handler
+    handler: get-labels/index${self:custom.handlerFilePostfix}.handler
     timeout: 30
     events:
       - sns: arn:aws:sns:${self:provider.environment.SERVERLESS_REGION}:${self:custom.secrets.ACCOUNT}:${self:provider.environment.CAPTURE_TOPIC_NAME}
   create-captures:
-    handler: create-captures/index.handler
+    handler: create-captures/index${self:custom.handlerFilePostfix}.handler
     memorySize: 1536
     timeout: 300
     events:
       - sns: arn:aws:sns:${self:provider.environment.SERVERLESS_REGION}:${self:custom.secrets.ACCOUNT}:${self:provider.environment.RENDER_START_TOPIC_NAME}
   create-gif:
-    handler: create-gif/index.handler
+    handler: create-gif/index${self:custom.handlerFilePostfix}.handler
     memorySize: 1536
     timeout: 300
     events:
@@ -92,14 +107,23 @@ functions:
 
 plugins:
   - serverless-mocha-plugin
+  - serverless-step-functions
 
 custom:
   serverless-mocha-plugin:
     functionTemplate: templates/function.ejs
   secrets: ${file(../.secrets.yml)}
+  # handlerFilePostfix: '-wrapper'
+  # handlerFilePostfix: ''
+  handlerFilePostfix: ${env:WT_RUN_NO_RECORDING, '-wrapper'}
+
+stepFunctions:
+  stateMachines:
+    checker: ${file(watchtower/stateMachine.yml):stateMachines.checker}
 
 resources:
   Outputs:
+    WTCheckerMachine: ${file(watchtower/outputs.yml):Outputs.WTCheckerMachine}
     RenderBucket:
       Value:
         Ref: RenderBucket
@@ -121,6 +145,13 @@ resources:
       Export:
         Name: video-service-render-ready-topic-${self:provider.environment.SERVERLESS_STAGE}
   Resources:
+    EventsTable:          ${file(watchtower/ddbTables.yml):Resources.EventsTable}
+    CheckpointsTable:     ${file(watchtower/ddbTables.yml):Resources.CheckpointsTable}
+    InvocationStream:     ${file(watchtower/kinesisStreams.yml):Resources.InvocationStream}
+    EventsStream:         ${file(watchtower/kinesisStreams.yml):Resources.EventsStream}
+    EventWriterRole:      ${file(watchtower/iamRoles.yml):Resources.EventWriterRole}
+    EventReaderRole:      ${file(watchtower/iamRoles.yml):Resources.EventReaderRole}
+    StateMachineListExec: ${file(watchtower/iamRoles.yml):Resources.StateMachineListExec}
     CaptureTopic:
       Type: AWS::SNS::Topic
       Properties:
