@@ -69,7 +69,7 @@ package:
     - .git/**
     - templates
     - ffmpeg/**
-  individually: true
+  # individually: true
 
 functions:
   watchtower-ingestion: ${file(watchtower/functions.yml):watchtower-ingestion}   # Event ingestion function
