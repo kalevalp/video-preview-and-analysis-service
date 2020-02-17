@@ -5,6 +5,7 @@ const debug = process.env.DEBUG_WATCHTOWER;
 // Loading modules that fail when required via vm2
 const aws = require('aws-sdk');
 const fse = require('fs-extra');
+const cp = require('child_process');
 
 let context, lambdaExecutionContext, lambdaInputEvent;
 function updateContext(name, event, lambdaContext) { context = name; lambdaExecutionContext = lambdaContext; lambdaInputEvent = event; }
@@ -12,6 +13,19 @@ function updateContext(name, event, lambdaContext) { context = name; lambdaExecu
 const mock = {
     'aws-sdk' : aws,
     'fs-extra': fse,
+    'child_process': {
+        'exec': cp.exec,
+        'spawn': (...params) => {
+            const command = params[0];
+            const args = params[1];
+            const recoveredArgs = []
+            for (const arg of args) {
+                recoveredArgs.push(arg);
+            }
+
+            return cp.spawn(command, recoveredArgs);
+        },
+    },
 };
 
 module.exports.handler = recorder.createRecordingHandler('create-gif/index.js', 'handler', mock, false, updateContext, true);
