@@ -16,7 +16,8 @@
     "url": "https://github.com/SC5/sc5-serverless-boilerplate.git"
   },
   "dependencies": {
-    "uuid": "^3.0.1"
+    "uuid": "^3.0.1",
+    "watchtower-recorder": "^2.4.0"
   },
   "devDependencies": {
     "aws-sdk": "^2.7.10",
